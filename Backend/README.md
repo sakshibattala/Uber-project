@@ -319,3 +319,281 @@ If the user is successfully logged out, the server will respond with:
 - Ensure the `JWT_SECRET_KEY` is set in the `.env` file for token verification.
 - Blacklisted tokens are stored in the `blackListToken` collection to prevent reuse.
 - The `Authorization` header must contain a valid JWT token for both `/users/profile` and `/users/logout` endpoints.
+
+---
+
+## Endpoint: `/captains/register`
+
+### Description
+
+The `/captains/register` endpoint is used to register a new captain in the system. It validates the input data, hashes the captain's password, stores the captain in the database, and generates a JWT token for authentication.
+
+---
+
+### HTTP Method
+
+`POST`
+
+---
+
+### Request Headers
+
+- `Content-Type: application/json`
+
+---
+
+### Request Body
+
+The request body should be in JSON format and include the following fields:
+
+| Field                | Type   | Required | Validation                                   |
+|----------------------|--------|----------|---------------------------------------------|
+| `fullname.firstname` | String | Yes      | Minimum 3 characters                        |
+| `fullname.lastname`  | String | No       | Minimum 3 characters (if provided)          |
+| `email`              | String | Yes      | Must be a valid email format                |
+| `password`           | String | Yes      | Minimum 6 characters                        |
+| `vehicle.color`      | String | Yes      | Minimum 3 characters                        |
+| `vehicle.capacity`   | Number | Yes      | Must be at least 1                          |
+| `vehicle.vehicleType`| String | Yes      | Must be one of `car`, `motorcycle`, `auto`  |
+| `vehicle.plate`      | String | Yes      | Minimum 3 characters                        |
+
+#### Example Request Body
+
+```json
+{
+  "fullname": {
+    "firstname": "Jane",
+    "lastname": "Doe"
+  },
+  "email": "jane@example.com",
+  "password": "securepassword123",
+  "vehicle": {
+    "color": "Red",
+    "capacity": 4,
+    "vehicleType": "car",
+    "plate": "ABC123"
+  }
+}
+```
+
+---
+
+### Response
+
+#### Success Response (201 Created)
+
+If the captain is successfully registered, the server will respond with the following:
+
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "captain": {
+    "_id": "507f1f77bcf86cd799439011",
+    "fullname": {
+      "firstname": "Jane",
+      "lastname": "Doe"
+    },
+    "email": "jane@example.com",
+    "vehicle": {
+      "color": "Red",
+      "capacity": 4,
+      "vehicleType": "car",
+      "plate": "ABC123"
+    },
+    "socketId": null,
+    "status": "inactive"
+  }
+}
+```
+
+---
+
+### How It Works
+
+1. **Validation**:  
+   The input data is validated using `express-validator` middleware in the `captain.routes.js` file.
+
+   - Email must be valid.
+   - First name must be at least 3 characters long.
+   - Password must be at least 6 characters long.
+   - Vehicle details must meet the specified validation rules.
+
+2. **Controller**:  
+   The `registerCaptain` function in `captain.controller.js` handles the request:
+
+   - Checks for validation errors.
+   - Hashes the password using bcrypt.
+   - Calls the `captainService` to save the captain in the database.
+   - Generates a JWT token for the captain.
+
+3. **Service**:  
+   The `captainService` function in `captain.service.js` handles the business logic:
+
+   - Validates required fields.
+   - Creates a new captain in the MongoDB database.
+
+4. **Model**:  
+   The `captain.model.js` file defines the MongoDB schema and includes methods for:
+   - Hashing passwords.
+   - Generating JWT tokens.
+
+---
+
+## Endpoint: `/captains/login`
+
+### Description
+
+The `/captains/login` endpoint is used to authenticate an existing captain. It validates the input data, checks the captain's credentials, and generates a JWT token upon successful authentication.
+
+---
+
+### HTTP Method
+
+`POST`
+
+---
+
+### Request Headers
+
+- `Content-Type: application/json`
+
+---
+
+### Request Body
+
+The request body should be in JSON format and include the following fields:
+
+| Field      | Type   | Required | Validation                   |
+|------------|--------|----------|------------------------------|
+| `email`    | String | Yes      | Must be a valid email format |
+| `password` | String | Yes      | Minimum 6 characters         |
+
+#### Example Request Body
+
+```json
+{
+  "email": "jane@example.com",
+  "password": "securepassword123"
+}
+```
+
+---
+
+### Response
+
+#### Success Response (200 OK)
+
+If the captain is successfully authenticated, the server will respond with the following:
+
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "captain": {
+    "_id": "507f1f77bcf86cd799439011",
+    "fullname": {
+      "firstname": "Jane",
+      "lastname": "Doe"
+    },
+    "email": "jane@example.com",
+    "vehicle": {
+      "color": "Red",
+      "capacity": 4,
+      "vehicleType": "car",
+      "plate": "ABC123"
+    },
+    "socketId": null,
+    "status": "inactive"
+  }
+}
+```
+
+---
+
+## Endpoint: `/captains/profile`
+
+### Description
+
+The `/captains/profile` endpoint is used to retrieve the profile of the currently authenticated captain. The captain must provide a valid JWT token to access this endpoint.
+
+---
+
+### HTTP Method
+
+`GET`
+
+---
+
+### Request Headers
+
+- `Authorization: Bearer <JWT_TOKEN>` (Required)
+
+---
+
+### Response
+
+#### Success Response (200 OK)
+
+If the captain is authenticated, the server will respond with the captain's profile:
+
+```json
+{
+  "captain": {
+    "_id": "507f1f77bcf86cd799439011",
+    "fullname": {
+      "firstname": "Jane",
+      "lastname": "Doe"
+    },
+    "email": "jane@example.com",
+    "vehicle": {
+      "color": "Red",
+      "capacity": 4,
+      "vehicleType": "car",
+      "plate": "ABC123"
+    },
+    "socketId": null,
+    "status": "inactive"
+  }
+}
+```
+
+---
+
+## Endpoint: `/captains/logout`
+
+### Description
+
+The `/captains/logout` endpoint is used to log out the currently authenticated captain. It invalidates the captain's JWT token by adding it to a blacklist.
+
+---
+
+### HTTP Method
+
+`GET`
+
+---
+
+### Request Headers
+
+- `Authorization: Bearer <JWT_TOKEN>` (Required)
+
+---
+
+### Response
+
+#### Success Response (200 OK)
+
+If the captain is successfully logged out, the server will respond with:
+
+```json
+{
+  "message": "Captain Logged out"
+}
+```
+
+---
+
+### Notes
+
+- Ensure the `JWT_SECRET_KEY` is set in the `.env` file for token verification.
+- Blacklisted tokens are stored in the `blackListToken` collection to prevent reuse.
+- The `Authorization` header must contain a valid JWT token for all `/captains` endpoints.
