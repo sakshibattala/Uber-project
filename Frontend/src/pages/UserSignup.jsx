@@ -1,23 +1,39 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useContext, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { UserContext } from "../context/UserContext";
+import axios from "axios";
 
 const UserSignup = () => {
-  const [firstName, setfirstName] = useState("");
-  const [lastName, setlastName] = useState("");
+  const [firstname, setfirstName] = useState("");
+  const [lastname, setlastName] = useState("");
   const [email, setemail] = useState("");
   const [password, setpassword] = useState("");
-  const [userData, setuserData] = useState({});
 
-  const onSubmitHandler = (e) => {
+  const { user, setUser } = useContext(UserContext);
+  const navigate = useNavigate();
+
+  const onSubmitHandler = async (e) => {
     e.preventDefault();
-    setuserData({
+    const newUser = {
       fullname: {
-        firstName,
-        lastName,
+        firstname,
+        lastname,
       },
       email,
       password,
-    });
+    };
+
+    const response = await axios.post(
+      `${import.meta.env.VITE_BASE_URL}/users/register`,
+      newUser
+    );
+
+    if (response.status === 201) {
+      const data = await response.data.user;
+      setUser(data.user);
+      localStorage.setItem("token", data.token);
+      navigate("/home");
+    }
 
     setemail("");
     setfirstName("");
@@ -42,7 +58,7 @@ const UserSignup = () => {
               type="text"
               placeholder="first name"
               required
-              value={firstName}
+              value={firstname}
               onChange={(e) => setfirstName(e.target.value)}
             />
 
@@ -51,7 +67,7 @@ const UserSignup = () => {
               type="text"
               placeholder="last name"
               required
-              value={lastName}
+              value={lastname}
               onChange={(e) => setlastName(e.target.value)}
             />
           </div>
