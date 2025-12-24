@@ -30,14 +30,15 @@ const Userlogin = () => {
         setUser(data.user);
         localStorage.setItem("token", data.token);
         navigate("/home");
+
+        setemail("");
+        setpassword("");
+        return;
       }
     } catch (err) {
       console.log(err.response.data);
       toast.error(err.response.data.message);
     }
-
-    setemail("");
-    setpassword("");
   };
 
   return (
