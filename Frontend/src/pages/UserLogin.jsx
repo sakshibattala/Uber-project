@@ -2,12 +2,13 @@ import React, { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { UserContext } from "../context/UserContext";
 import axios from "axios";
+import { ToastContainer, toast } from "react-toastify";
 
 const Userlogin = () => {
   const [email, setemail] = useState("");
   const [password, setpassword] = useState("");
 
-  const { user, setUser } = useContext(UserContext);
+  const { setUser } = useContext(UserContext);
   const navigate = useNavigate();
 
   const onSubmitHandler = async (e) => {
@@ -17,16 +18,22 @@ const Userlogin = () => {
       password,
     };
 
-    const response = await axios.post(
-      `${import.meta.env.VITE_BASE_URL}/users/login`,
-      user
-    );
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/users/login`,
+        user
+      );
 
-    if (response.status === 200) {
-      const data = await response.data;
-      setUser(data.user);
-      localStorage.setItem("token", data.token);
-      navigate("/home");
+      if (response.status === 200) {
+        const data = await response.data;
+        toast.success("Login Success");
+        setUser(data.user);
+        localStorage.setItem("token", data.token);
+        navigate("/home");
+      }
+    } catch (err) {
+      console.log(err.response.data);
+      toast.error(err.response.data.message);
     }
 
     setemail("");

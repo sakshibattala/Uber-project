@@ -2,6 +2,7 @@ import React, { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { CaptainContext } from "../context/CaptainContext";
+import { toast } from "react-toastify";
 
 const CaptainSignup = () => {
   const [firstName, setfirstName] = useState("");
@@ -33,25 +34,50 @@ const CaptainSignup = () => {
       },
     };
 
-    const response = await axios.post(
-      `${import.meta.env.VITE_BASE_URL}/captains/register`,
-      newCaptain
-    );
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/captains/register`,
+        newCaptain
+      );
 
-    if (response.status === 201) {
-      setCaptain(response.data.captain);
-      localStorage.setItem("token", response.data.token);
-      navigate("/captain-home");
+      if (response.status === 201) {
+        setCaptain(response.data.captain);
+        localStorage.setItem("token", response.data.token);
+        toast.success("Registration success");
+        navigate("/captain-home");
+      }
+
+      setemail("");
+      setfirstName("");
+      setpassword("");
+      setlastName("");
+      setcolor("");
+      setcapacity("");
+      settype("");
+      setplate("");
+      return;
+    } catch (err) {
+      console.log(err.response.data);
+      const res = err.response;
+
+      if (!res) {
+        toast.error("Network error — try again!");
+        return;
+      }
+
+      const data = res.data;
+
+      //express validator errors
+      if (Array.isArray(data?.errors)) {
+        toast.error(data.errors[0].msg);
+      }
+      //backend custom msg
+      else if (data?.message) {
+        toast.error(data.message);
+      } else {
+        toast.error("something went wrong");
+      }
     }
-
-    setemail("");
-    setfirstName("");
-    setpassword("");
-    setlastName("");
-    setcolor("");
-    setcapacity("");
-    settype("");
-    setplate("");
   };
 
   return (

@@ -1,11 +1,17 @@
 import React from "react";
 
-export const VehiclePanel = (props) => {
+export const VehiclePanel = ({
+  setconfirmRidePanelOpen,
+  setvehiclePanelOpen,
+  fare,
+  distanceAway,
+  setvehicleType,
+}) => {
   return (
     <div className="p-3">
       <h1
         className="p-1 text-center w-[93%] absolute top-0"
-        onClick={() => props.setvehiclePanelOpen(false)}
+        onClick={() => setvehiclePanelOpen(false)}
       >
         <i className="text-3xl text-gray-200 ri-arrow-down-wide-line"></i>
       </h1>
@@ -14,8 +20,9 @@ export const VehiclePanel = (props) => {
 
       <div
         onClick={() => {
-          props.setconfirmRidePanelOpen(true);
-          props.setvehiclePanelOpen(false);
+          setconfirmRidePanelOpen(true);
+          setvehiclePanelOpen(false);
+          setvehicleType("car");
         }}
         className="flex border-2 border-gray-100 active:border-black  mb-2 rounded-xl w-full p-3  items-center justify-between"
       >
@@ -32,19 +39,20 @@ export const VehiclePanel = (props) => {
               <i className="ri-user-fill"></i>4
             </span>
           </h3>
-          <p className="font-medium text-sm">2 min away</p>
+          <p className="font-medium text-sm">{distanceAway} min away</p>
           <p className="font-normal text-xs text-gray-600">
             Affordable, compact rides
           </p>
         </div>
 
-        <h2 className="text-lg font-semibold">₹193.20</h2>
+        <h2 className="text-lg font-semibold">₹{fare.car}</h2>
       </div>
 
       <div
         onClick={() => {
-          props.setconfirmRidePanelOpen(true);
-          props.setvehiclePanelOpen(false);
+          setconfirmRidePanelOpen(true);
+          setvehiclePanelOpen(false);
+          setvehicleType("motorcycle");
         }}
         className="flex border-2 border-gray-100 active:border-black  mb-2 rounded-xl w-full p-3  items-center justify-between"
       >
@@ -61,19 +69,20 @@ export const VehiclePanel = (props) => {
               <i className="ri-user-fill"></i>1
             </span>
           </h3>
-          <p className="font-medium text-sm">3 min away</p>
+          <p className="font-medium text-sm">{distanceAway} min away</p>
           <p className="font-normal text-xs text-gray-600">
             Affordable motorcycle rides
           </p>
         </div>
 
-        <h2 className="text-lg font-semibold">₹65</h2>
+        <h2 className="text-lg font-semibold">₹{fare.motorcycle}</h2>
       </div>
 
       <div
         onClick={() => {
-          props.setconfirmRidePanelOpen(true);
-          props.setvehiclePanelOpen(false);
+          setconfirmRidePanelOpen(true);
+          setvehiclePanelOpen(false);
+          setvehicleType("auto");
         }}
         className="flex border-2 border-gray-100 active:border-black  mb-2 rounded-xl w-full p-3  items-center justify-between"
       >
@@ -90,13 +99,13 @@ export const VehiclePanel = (props) => {
               <i className="ri-user-fill"></i>3
             </span>
           </h3>
-          <p className="font-medium text-sm">3 min away</p>
+          <p className="font-medium text-sm">{distanceAway} min away</p>
           <p className="font-normal text-xs text-gray-600">
             Affordable auto rides
           </p>
         </div>
 
-        <h2 className="text-lg font-semibold">₹118.68</h2>
+        <h2 className="text-lg font-semibold">₹{fare.auto}</h2>
       </div>
     </div>
   );

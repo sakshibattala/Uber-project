@@ -2,6 +2,7 @@ import React, { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { UserContext } from "../context/UserContext";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 const UserSignup = () => {
   const [firstname, setfirstName] = useState("");
@@ -23,22 +24,50 @@ const UserSignup = () => {
       password,
     };
 
-    const response = await axios.post(
-      `${import.meta.env.VITE_BASE_URL}/users/register`,
-      newUser
-    );
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/users/register`,
+        newUser
+      );
 
-    if (response.status === 201) {
-      const data = await response.data.user;
-      setUser(data.user);
-      localStorage.setItem("token", data.token);
-      navigate("/home");
+      console.log(response);
+
+      if (response.status === 201) {
+        const data = response.data;
+        setUser(data.user);
+        localStorage.setItem("token", data.token);
+        toast.success("registration success");
+        navigate("/home");
+
+        // reset only after success
+        setemail("");
+        setfirstName("");
+        setpassword("");
+        setlastName("");
+        return;
+      }
+    } catch (err) {
+      const res = err.response;
+
+      if (!res) {
+        toast.error("Network error — try again!");
+        return;
+      }
+
+      const data = res.data;
+
+      // If express-validator sent an array of errors
+      if (Array.isArray(data?.errors)) {
+        toast.error(data.errors[0].msg);
+      }
+
+      // backend custom error message
+      else if (data?.message) {
+        toast.error(data.message);
+      } else {
+        toast.error("something went wrong");
+      }
     }
-
-    setemail("");
-    setfirstName("");
-    setpassword("");
-    setlastName("");
   };
 
   return (

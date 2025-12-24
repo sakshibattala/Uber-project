@@ -31,6 +31,10 @@ module.exports.captainService = async ({
       capacity: vehicle.capacity,
       vehicleType: vehicle.vehicleType,
       plate: vehicle.plate,
+      location: {
+        type: "Point",
+        coordinates: [0, 0],
+      },
     },
   });
 

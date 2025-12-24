@@ -2,6 +2,7 @@ import React, { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { CaptainContext } from "../context/CaptainContext";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 const CaptainLogin = () => {
   const [email, setemail] = useState("");
@@ -14,20 +15,27 @@ const CaptainLogin = () => {
     e.preventDefault();
     const captain = { email, password };
 
-    const response = await axios.post(
-      `${import.meta.env.VITE_BASE_URL}/captains/login`,
-      captain
-    );
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/captains/login`,
+        captain
+      );
 
-    if (response.status === 200) {
-      const captain = response.data.captain;
-      setCaptain(captain);
-      localStorage.setItem("token", response.data.token);
-      navigate("/captain-home");
+      if (response.status === 200) {
+        const captain = response.data.captain;
+        setCaptain(captain);
+        localStorage.setItem("token", response.data.token);
+        toast.success("Login success");
+        navigate("/captain-home");
+      }
+
+      setemail("");
+      setpassword("");
+    } catch (err) {
+      console.log(err.response.data);
+      const res = err.response;
+      toast.error(res.data.message);
     }
-
-    setemail("");
-    setpassword("");
   };
 
   return (

@@ -167,6 +167,7 @@ If the user is successfully authenticated, the server will respond with the foll
   }
 }
 ```
+
 ---
 
 ### How It Works
@@ -237,12 +238,14 @@ If the user is authenticated, the server will respond with the user's profile:
   "socketId": null
 }
 ```
+
 ---
 
 ### How It Works
 
 1. **Authentication Middleware**:  
    The `authUser` middleware in `auth.middleware.js` verifies the JWT token:
+
    - Checks if the token is blacklisted.
    - Decodes the token and retrieves the user from the database.
    - Attaches the user object to the `req` object.
@@ -297,12 +300,14 @@ If the user is successfully logged out, the server will respond with:
      "message": "Unauthorized"
    }
    ```
+
 ---
 
 ### How It Works
 
 1. **Authentication Middleware**:  
    The `authUser` middleware in `auth.middleware.js` verifies the JWT token:
+
    - Checks if the token is blacklisted.
    - Decodes the token and retrieves the user from the database.
 
@@ -346,16 +351,16 @@ The `/captains/register` endpoint is used to register a new captain in the syste
 
 The request body should be in JSON format and include the following fields:
 
-| Field                | Type   | Required | Validation                                   |
-|----------------------|--------|----------|---------------------------------------------|
-| `fullname.firstname` | String | Yes      | Minimum 3 characters                        |
-| `fullname.lastname`  | String | No       | Minimum 3 characters (if provided)          |
-| `email`              | String | Yes      | Must be a valid email format                |
-| `password`           | String | Yes      | Minimum 6 characters                        |
-| `vehicle.color`      | String | Yes      | Minimum 3 characters                        |
-| `vehicle.capacity`   | Number | Yes      | Must be at least 1                          |
-| `vehicle.vehicleType`| String | Yes      | Must be one of `car`, `motorcycle`, `auto`  |
-| `vehicle.plate`      | String | Yes      | Minimum 3 characters                        |
+| Field                 | Type   | Required | Validation                                 |
+| --------------------- | ------ | -------- | ------------------------------------------ |
+| `fullname.firstname`  | String | Yes      | Minimum 3 characters                       |
+| `fullname.lastname`   | String | No       | Minimum 3 characters (if provided)         |
+| `email`               | String | Yes      | Must be a valid email format               |
+| `password`            | String | Yes      | Minimum 6 characters                       |
+| `vehicle.color`       | String | Yes      | Minimum 3 characters                       |
+| `vehicle.capacity`    | Number | Yes      | Must be at least 1                         |
+| `vehicle.vehicleType` | String | Yes      | Must be one of `car`, `motorcycle`, `auto` |
+| `vehicle.plate`       | String | Yes      | Minimum 3 characters                       |
 
 #### Example Request Body
 
@@ -464,7 +469,7 @@ The `/captains/login` endpoint is used to authenticate an existing captain. It v
 The request body should be in JSON format and include the following fields:
 
 | Field      | Type   | Required | Validation                   |
-|------------|--------|----------|------------------------------|
+| ---------- | ------ | -------- | ---------------------------- |
 | `email`    | String | Yes      | Must be a valid email format |
 | `password` | String | Yes      | Minimum 6 characters         |
 
@@ -597,3 +602,413 @@ If the captain is successfully logged out, the server will respond with:
 - Ensure the `JWT_SECRET_KEY` is set in the `.env` file for token verification.
 - Blacklisted tokens are stored in the `blackListToken` collection to prevent reuse.
 - The `Authorization` header must contain a valid JWT token for all `/captains` endpoints.
+
+---
+
+## Endpoint: `maps/get-coordinates`
+
+### Description
+
+The `/get-coordinates` endpoint retrieves the latitude and longitude coordinates for a given address.
+
+---
+
+### HTTP Method
+
+`GET`
+
+---
+
+### Request Headers
+
+- `Authorization: Bearer <token>`
+
+---
+
+### Query Parameters
+
+| Parameter | Type   | Required | Validation           |
+| --------- | ------ | -------- | -------------------- |
+| `address` | String | Yes      | Minimum 3 characters |
+
+#### Example Request
+
+```
+GET /get-coordinates?address=New+York
+Authorization: Bearer <token>
+```
+
+---
+
+### Response
+
+#### Success Response (200 OK)
+
+```json
+{
+  "lat": 40.7128,
+  "lng": -74.006
+}
+```
+
+#### Error Response (400 Bad Request)
+
+```json
+{
+  "errors": [
+    {
+      "msg": "Invalid value",
+      "param": "address",
+      "location": "query"
+    }
+  ]
+}
+```
+
+---
+
+## Endpoint: `maps/get-distance-time`
+
+### Description
+
+The `maps/get-distance-time` endpoint calculates the distance and estimated travel time between two addresses.
+
+---
+
+### HTTP Method
+
+`GET`
+
+---
+
+### Request Headers
+
+- `Authorization: Bearer <token>`
+
+---
+
+### Query Parameters
+
+| Parameter     | Type   | Required | Validation           |
+| ------------- | ------ | -------- | -------------------- |
+| `source`      | String | Yes      | Minimum 3 characters |
+| `destination` | String | Yes      | Minimum 3 characters |
+
+#### Example Request
+
+```
+GET /get-distance-time?source=New+York&destination=Los+Angeles
+Authorization: Bearer <token>
+```
+
+---
+
+### Response
+
+#### Success Response (200 OK)
+
+```json
+{
+  "distanceInKm": "3940.07",
+  "durationInMin": "2400.5"
+}
+```
+
+#### Error Response (400 Bad Request)
+
+```json
+{
+  "errors": [
+    {
+      "msg": "Invalid value",
+      "param": "source",
+      "location": "query"
+    },
+    {
+      "msg": "Invalid value",
+      "param": "destination",
+      "location": "query"
+    }
+  ]
+}
+```
+
+---
+
+## Endpoint: `maps/get-suggestions`
+
+### Description
+
+The `maps/get-suggestions` endpoint provides address suggestions based on the input query.
+
+---
+
+### HTTP Method
+
+`GET`
+
+---
+
+### Request Headers
+
+- `Authorization: Bearer <token>`
+
+---
+
+### Query Parameters
+
+| Parameter | Type   | Required | Validation           |
+| --------- | ------ | -------- | -------------------- |
+| `input`   | String | Yes      | Minimum 3 characters |
+
+#### Example Request
+
+```
+GET /get-suggestions?input=New
+Authorization: Bearer <token>
+```
+
+---
+
+### Response
+
+#### Success Response (200 OK)
+
+```json
+[
+  {
+    "id": "1",
+    "name": "New York, NY, USA"
+  },
+  {
+    "id": "2",
+    "name": "Newark, NJ, USA"
+  }
+]
+```
+
+#### Error Response (400 Bad Request)
+
+```json
+{
+  "errors": [
+    {
+      "msg": "Invalid value",
+      "param": "input",
+      "location": "query"
+    }
+  ]
+}
+```
+
+---
+
+## Endpoint: `/rides/create-ride`
+
+### Description
+
+The `/rides/create-ride` endpoint allows a user to create a new ride request by providing the pickup and destination locations, as well as the vehicle type.
+
+---
+
+### HTTP Method
+
+`POST`
+
+---
+
+### Request Headers
+
+- `Authorization: Bearer <token>`
+- `Content-Type: application/json`
+
+---
+
+### Request Body
+
+The request body should be in JSON format and include the following fields:
+
+| Field         | Type   | Required | Validation                                    |
+| ------------- | ------ | -------- | --------------------------------------------- |
+| `pickup`      | String | Yes      | Minimum 3 characters                          |
+| `destination` | String | Yes      | Minimum 3 characters                          |
+| `vehicleType` | String | Yes      | Must be one of `auto`, `car`, or `motorcycle` |
+
+#### Example Request Body
+
+```json
+{
+  "pickup": "New York",
+  "destination": "Los Angeles",
+  "vehicleType": "car"
+}
+```
+
+---
+
+### Response
+
+#### Success Response (201 Created)
+
+If the ride is successfully created, the server will respond with the following:
+
+```json
+{
+  "ride": {
+    "_id": "507f1f77bcf86cd799439011",
+    "userId": "507f1f77bcf86cd799439012",
+    "pickup": "New York",
+    "destination": "Los Angeles",
+    "vehicleType": "car",
+    "fare": 500,
+    "status": "pending",
+    "otp": "123456"
+  }
+}
+```
+
+#### Error Response (400 Bad Request)
+
+```json
+{
+  "errors": [
+    {
+      "msg": "pickup location must be 3 chars long",
+      "param": "pickup",
+      "location": "body"
+    },
+    {
+      "msg": "destination location must be 3 chars long",
+      "param": "destination",
+      "location": "body"
+    },
+    {
+      "msg": "Invalid vehicle type",
+      "param": "vehicleType",
+      "location": "body"
+    }
+  ]
+}
+```
+
+---
+
+### How It Works
+
+1. **Validation**:  
+   The input data is validated using `express-validator` middleware in the `ride.routes.js` file:
+
+   - `pickup` and `destination` must be strings with a minimum length of 3 characters.
+   - `vehicleType` must be one of `auto`, `car`, or `motorcycle`.
+
+2. **Controller**:  
+   The `createRide` function in `ride.controller.js` handles the request:
+
+   - Checks for validation errors.
+   - Calls the `createRide` service to create a new ride in the database.
+
+3. **Service**:  
+   The `createRide` function in `ride.service.js` handles the business logic:
+
+   - Calculates the fare based on the distance and duration between the pickup and destination locations.
+   - Generates a 6-digit OTP for the ride.
+   - Saves the ride details in the database.
+
+4. **Model**:  
+   The `ride.model.js` file defines the MongoDB schema for the ride, including fields for:
+
+   - `pickup`, `destination`, `vehicleType`, `fare`, `status`, and `otp`.
+
+---
+
+## Endpoint: `/rides/get-fare`
+
+### Description
+
+The `/rides/get-fare` endpoint calculates the estimated fare for a ride based on the pickup and destination locations.
+
+---
+
+### HTTP Method
+
+`GET`
+
+---
+
+### Request Headers
+
+- `Authorization: Bearer <token>`
+
+---
+
+### Query Parameters
+
+| Parameter     | Type   | Required | Validation           |
+| ------------- | ------ | -------- | -------------------- |
+| `pickup`      | String | Yes      | Minimum 3 characters |
+| `destination` | String | Yes      | Minimum 3 characters |
+
+#### Example Request
+
+```
+GET /rides/get-fare?pickup=New+York&destination=Los+Angeles
+Authorization: Bearer <token>
+```
+
+---
+
+### Response
+
+#### Success Response (200 OK)
+
+If the fare is successfully calculated, the server will respond with the following:
+
+```json
+{
+  "auto": 350,
+  "car": 500,
+  "motorcycle": 300
+}
+```
+
+#### Error Response (400 Bad Request)
+
+```json
+{
+  "errors": [
+    {
+      "msg": "Invalid pickup address",
+      "param": "pickup",
+      "location": "query"
+    },
+    {
+      "msg": "Invalid destination address",
+      "param": "destination",
+      "location": "query"
+    }
+  ]
+}
+```
+
+---
+
+### How It Works
+
+1. **Validation**:  
+   The input data is validated using `express-validator` middleware in the `ride.routes.js` file:
+
+   - `pickup` and `destination` must be strings with a minimum length of 3 characters.
+
+2. **Controller**:  
+   The `getFare` function in `ride.controller.js` handles the request:
+
+   - Checks for validation errors.
+   - Calls the `getFare` service to calculate the estimated fare.
+
+3. **Service**:  
+   The `getFare` function in `ride.service.js` handles the business logic:
+
+   - Retrieves the distance and duration between the pickup and destination locations using the Mapbox API.
+   - Calculates the fare based on the distance, duration, and vehicle type.
+
+---
