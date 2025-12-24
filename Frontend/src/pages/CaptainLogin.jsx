@@ -32,9 +32,25 @@ const CaptainLogin = () => {
       setemail("");
       setpassword("");
     } catch (err) {
-      console.log(err.response.data);
       const res = err.response;
-      toast.error(res.data.message);
+      if (!res) {
+        toast.error("Network error — try again!");
+        return;
+      }
+
+      const data = res.data;
+
+      // If express-validator sent an array of errors
+      if (Array.isArray(data?.errors)) {
+        toast.error(data.errors[0].msg);
+      }
+
+      // backend custom error message
+      else if (data?.message) {
+        toast.error(data.message);
+      } else {
+        toast.error("something went wrong");
+      }
     }
   };
 
