@@ -29,7 +29,7 @@ module.exports.getDistanceAndTime = async (req, res) => {
     const { source, destination } = req.query;
     const result = await mapService.getDistanceAndTimeBtwAddresses(
       source,
-      destination
+      destination,
     );
 
     res.status(200).send(result);
@@ -53,6 +53,6 @@ module.exports.getSuggestions = async (req, res) => {
     res.status(200).send(suggestions);
   } catch (err) {
     console.log(err);
-    res.status(404).send("Internal server error");
+    res.status(500).send("Internal server error");
   }
 };

@@ -123,6 +123,8 @@ const Home = () => {
         },
       }
     );
+
+    console.log(response)
     setpickupSuggestions(response.data);
   };
 

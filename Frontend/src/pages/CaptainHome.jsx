@@ -10,6 +10,7 @@ import { SocketContext } from "../context/SocketContext";
 import { CaptainContext } from "../context/CaptainContext";
 import { useEffect } from "react";
 import axios from "axios";
+import LiveLocationMap from "../components/LiveLocationMap";
 
 const CaptainHome = () => {
   const [ridePopupPanel, setridePopupPanel] = useState(false);
@@ -124,6 +125,8 @@ const CaptainHome = () => {
             src="https://raw.githubusercontent.com/amitshekhariitbhu/ridesharing-uber-lyft-app/master/assets/nearby-cabs.png"
             alt="background"
           />
+
+          {/* <LiveLocationMap /> */}
         </div>
       </div>
 

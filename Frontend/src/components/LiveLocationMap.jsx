@@ -1,65 +1,94 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPS_KEY;
 
-const containerStyle = {
-  width: "100%",
-  height: "100%",
-};
-
 const LiveLocationMap = () => {
-  const [currentPosition, setCurrentPosition] = useState({
-    lat: 28.6139,
-    lng: 77.209,
-  });
+  const mapContainerRef = useRef(null);
+  const mapRef = useRef(null);
+  const markerRef = useRef(null);
+  const watchIdRef = useRef(null);
 
+  const [userLocation, setUserLocation] = useState(null);
+
+  // 📍 Get location immediately on login
   useEffect(() => {
-    let map;
+    if (!navigator.geolocation) {
+      alert("Geolocation not supported");
+      return;
+    }
 
-    // Initialize Mapbox map
-    map = new mapboxgl.Map({
-      container: "mapbox-container",
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        console.log(pos)
+        setUserLocation({
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+        });
+      },
+      (err) => {
+        console.error(err);
+        alert("Location permission denied");
+      },
+      { enableHighAccuracy: true }
+    );
+  }, []);
+
+  // 🗺️ Initialize map after location is ready
+  useEffect(() => {
+    if (!userLocation || mapRef.current) return;
+
+    mapRef.current = new mapboxgl.Map({
+      container: mapContainerRef.current,
       style: "mapbox://styles/mapbox/streets-v12",
-      center: [currentPosition.lng, currentPosition.lat],
+      center: [userLocation.lng, userLocation.lat],
       zoom: 15,
+      interactive: true, // 🔥 IMPORTANT
     });
 
-    // User marker
-    let marker = new mapboxgl.Marker({ color: "red" })
-      .setLngLat([currentPosition.lng, currentPosition.lat])
-      .addTo(map);
+    // Enable gestures explicitly
+    mapRef.current.dragPan.enable();
+    mapRef.current.scrollZoom.enable();
+    mapRef.current.doubleClickZoom.enable();
+    mapRef.current.touchZoomRotate.enable();
 
-    // Track live location
-    const watchId = navigator.geolocation.watchPosition(
+    // Marker
+    markerRef.current = new mapboxgl.Marker({ color: "red" })
+      .setLngLat([userLocation.lng, userLocation.lat])
+      .addTo(mapRef.current);
+
+    // 🔄 Live location tracking
+    watchIdRef.current = navigator.geolocation.watchPosition(
       (pos) => {
         const { latitude, longitude } = pos.coords;
-        setCurrentPosition({ lat: latitude, lng: longitude });
 
-        // Update map center
-        map.setCenter([longitude, latitude]);
+        markerRef.current.setLngLat([longitude, latitude]);
 
-        // Update marker
-        marker.setLngLat([longitude, latitude]);
+        // Smooth camera follow
+        mapRef.current.easeTo({
+          center: [longitude, latitude],
+          duration: 500,
+        });
       },
-      (err) => console.log(err),
+      (err) => console.error(err),
       { enableHighAccuracy: true }
     );
 
     return () => {
-      navigator.geolocation.clearWatch(watchId);
-      map.remove();
+      if (watchIdRef.current) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+      }
+      mapRef.current?.remove();
+      mapRef.current = null;
     };
-  }, []);
+  }, [userLocation]);
 
   return (
     <div
-      id="mapbox-container"
-      style={{
-        width: "100%",
-        height: "100%",
-      }}
-    ></div>
+      ref={mapContainerRef}
+      className="w-full h-full"
+      style={{ touchAction: "pan-x pan-y" }} // 👈 FIX SCROLL ISSUE
+    />
   );
 };
 

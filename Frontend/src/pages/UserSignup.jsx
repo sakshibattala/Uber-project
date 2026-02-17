@@ -49,6 +49,8 @@ const UserSignup = () => {
     } catch (err) {
       const res = err.response;
 
+      console.log(err)
+
       if (!res) {
         toast.error("Network error — try again!");
         return;
